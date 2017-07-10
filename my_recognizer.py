@@ -1,7 +1,6 @@
 import warnings
 from asl_data import SinglesData
 
-
 def recognize(models: dict, test_set: SinglesData):
     """ Recognize test word sequences from word models set
 
@@ -18,8 +17,41 @@ def recognize(models: dict, test_set: SinglesData):
            ['WORDGUESS0', 'WORDGUESS1', 'WORDGUESS2',...]
    """
     warnings.filterwarnings("ignore", category=DeprecationWarning)
+    
     probabilities = []
     guesses = []
-    # TODO implement the recognizer
-    # return probabilities, guesses
-    raise NotImplementedError
+    
+    X_lengths = test_set.get_all_Xlengths()
+    
+    for X, lengths in X_lengths.values():
+        log_likelihood = {} # Save the likelihood of a word
+        max_score = float("-inf") # Save max score as recognizer iterates the list
+        best_guess = None # Save best guess as recognizer iterates the list
+        for word, model in models.items():
+            try:
+                # Score word using model
+                word_score = model.score(X, lengths)
+                log_likelihood[word] = word_score
+
+                if word_score > max_score:
+                    max_score = word_score
+                    best_guess = word
+            except:
+                # Unable to process word
+                log_likelihood[word] = float("-inf")
+
+        guesses.append(best_guess)
+        probabilities.append(log_likelihood)
+
+    return probabilities, guesses
+
+
+
+
+
+
+
+
+
+
+
